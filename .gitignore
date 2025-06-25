@@ -1,0 +1,9 @@
+# generated file folders
+bin/
+debug/
+out/
+target/
+
+.DS_Store
+
+~$*.xlsx
