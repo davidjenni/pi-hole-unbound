@@ -1,0 +1,14 @@
+services:
+  dns:
+    container_name: dns
+    build:
+      context: unbound/
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "5335:5335/tcp"
+      - "5335:5335/udp"
+
+networks:
+  dns_network:
+    driver: host

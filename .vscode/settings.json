@@ -1,4 +1,15 @@
 {
-  "cSpell.words": [],
+  "cSpell.words": [
+    "checkconf",
+    "DNSSEC",
+    "edns",
+    "jenni",
+    "logfile",
+    "minimisation",
+    "qname",
+    "rcvbuf",
+    "servfail",
+    "Ubiquiti"
+  ],
   "editor.formatOnSave": true
 }
