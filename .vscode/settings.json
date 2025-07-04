@@ -1,11 +1,13 @@
 {
   "cSpell.words": [
+    "Buildx",
     "checkconf",
     "DNSSEC",
     "edns",
     "jenni",
     "logfile",
     "minimisation",
+    "noreset",
     "qname",
     "rcvbuf",
     "servfail",
