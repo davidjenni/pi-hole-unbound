@@ -1,0 +1,63 @@
+name: Build docker container
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    # strategy:
+    #   fail-fast: false
+    #   matrix:
+    #     platform:
+    #       - arch: amd64
+    #       - arch: arm64
+
+    runs-on: ubuntu-latest
+    permissions:
+      attestations: write
+      contents: read
+      # id-token: write
+      # packages: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build images
+        run: |
+          docker compose --progress plain build --pull
+
+      - name: Bring up containers and test
+        run: |
+          docker compose --progress plain up --detach --wait --wait-timeout 30 --no-build
+          echo "-- Running containers:"
+          docker ps --size
+          echo "-- Logs:"
+          docker logs dns
+          echo "-- DNSSEC query:"
+          dig -p 5335 @localhost cloudflare.com +dnssec
+          echo "-- Sleeping..."
+          sleep 10
+          echo "-- Unbound stats:"
+          docker exec -i dns unbound-control stats_noreset
+          echo "-- Unbound cache dump:"
+          docker exec -i dns unbound-control dump_cache > /tmp/unbound_cache_dump.txt
+          cat /tmp/unbound_cache_dump.txt | head -n 10
+          echo "-- Unbound cache dump (last 10 lines):"
+          tail -n 10 /tmp/unbound_cache_dump.txt
+
+      - name: Stop containers
+        run: |
+          docker compose --progress plain down --rmi all
+
+      - name: upload cache dump
+        uses: actions/upload-artifact@v4
+        with:
+          name: unbound_cache_dump
+          path: /tmp/unbound_cache_dump.txt
