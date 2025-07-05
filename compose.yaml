@@ -1,0 +1,96 @@
+services:
+  traefik:
+    container_name: traefik
+    image: traefik:v3.4
+    command:
+      - "--api.insecure=true"
+      - "--api.dashboard=true"
+      - "--log.level=INFO"
+      - "--providers.docker=true"
+      # don't proxy for the DNS 53 ports, not reliably forwarded by traefik
+      - "--entrypoints.web.address=:80"
+      - "--ping=true"
+    networks:
+      - dns-net
+    ports:
+      - "80:80"
+    depends_on:
+      - pihole
+    healthcheck:
+      test: ["CMD-SHELL", "traefik healthcheck --ping || exit 1"]
+      interval: 60s
+      timeout: 5s
+      start_period: 30s
+      start_interval: 10s
+      retries: 3
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.api.entrypoints=web"
+      - "traefik.http.routers.api.service=api@internal"
+      - "traefik.http.routers.api.rule=Host(`traefik.localhost`)"
+
+  dns:
+    container_name: dns
+    build:
+      context: ./unbound/
+      dockerfile: Dockerfile
+    networks:
+      - dns-net
+    ports:
+      - "5335:5335/tcp"
+      - "5335:5335/udp"
+    healthcheck:
+      test: ["CMD-SHELL", "drill -D -p 5335 cloudflare.com @127.0.0.1 || exit 1"]
+      interval: 60s
+      timeout: 10s
+      start_period: 30s
+      start_interval: 10s
+      retries: 3
+    restart: unless-stopped
+
+  pihole:
+    container_name: pihole
+    hostname: ns1
+    image: pihole/pihole:latest
+    networks:
+      - dns-net
+    ports:
+      - "5300:53/tcp"
+      - "5300:53/udp"
+    environment:
+      # https://docs.pi-hole.net/docker/configuration/?h=tz#environment-variables
+      TZ: "America/Los_Angeles"
+      FTLCONF_dns_upstreams: "dns#5335"
+      FTLCONF_dns_dnssec: "true"
+      FTLCONF_dns_interface: "eth0"
+      FTLCONF_dns_listeningMode: "BIND"
+      FTLCONF_dns_revServers: "true,10.0.10.0/24,10.0.10.1,jenni.home"
+      FTLCONF_dns_reply_host_force4: "true"
+      # set webUI password later via:
+      # > docker exec -it pihole pihole setpassword <password>
+    volumes:
+      - ./pi-hole:/etc/pihole
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.pihole.entrypoints=web"
+      - "traefik.http.routers.pihole.service=pihole"
+      - "traefik.http.routers.pihole.rule=Host(`pihole.localhost`)"
+      - "traefik.http.services.pihole.loadbalancer.server.port=80"
+    depends_on:
+      - dns
+    healthcheck:
+      test: ["CMD-SHELL", "dig @localhost github.com +short || exit 1"]
+      interval: 60s
+      timeout: 10s
+      start_period: 120s
+      start_interval: 15s
+      retries: 3
+    restart: unless-stopped
+
+networks:
+  dns-net:
+    name: dns-net
+    driver: bridge

@@ -4,6 +4,9 @@ debug/
 out/
 target/
 
+# ignore most files, except pihole.toml
+pi-hole/
+
 .DS_Store
 
 ~$*.xlsx
