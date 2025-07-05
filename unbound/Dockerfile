@@ -15,7 +15,3 @@ EXPOSE 5335/udp
 
 ENTRYPOINT ["/etc/unbound/startup.sh"]
 CMD ["-d", "-c", "/etc/unbound/unbound.conf"]
-
-# Healthcheck to ensure Unbound is running
-HEALTHCHECK --interval=30s --timeout=20s --start-period=10s \
-  CMD drill -p 5335 github.com @127.0.0.1 || exit 1
