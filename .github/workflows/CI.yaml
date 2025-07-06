@@ -39,7 +39,6 @@ jobs:
       - name: Bring up containers
         run: |
           docker compose --progress plain up --detach --wait --wait-timeout 30 --no-build
-          sleep 10
           echo "-- List containers:"
           docker ps --size
           echo "-- Logs:"
