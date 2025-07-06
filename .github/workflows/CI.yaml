@@ -33,7 +33,8 @@ jobs:
 
       - name: Build images
         run: |
-          docker compose --progress plain build --pull
+          docker compose --progress plain pull
+          docker compose --progress plain build
 
       - name: Bring up containers
         run: |
@@ -50,6 +51,7 @@ jobs:
         env:
           DUMP_CACHE_FILE: ${{ env.ARTIFACT_DIR }}/unbound_cache_dump.txt
         run: |
+          mkdir -p $ARTIFACT_DIR
           echo "-- DNSSEC query:"
           dig -p 5335 @localhost cloudflare.com +dnssec
           echo "-- Sleeping..."
