@@ -41,9 +41,11 @@ jobs:
           docker compose --progress plain up --detach --wait --wait-timeout 30 --no-build
           echo "-- List containers:"
           docker ps --size
-          echo "-- Logs:"
+          echo "-- traefik logs:"
           docker logs traefik
+          echo "-- unbound logs:"
           docker logs dns
+          echo "-- pihole logs:"
           docker logs pihole
 
       - name: Test Unbound DNS resolution
@@ -80,4 +82,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test_logs
-          path: $ARTIFACT_DIR/*
+          path: ${{ env.ARTIFACT_DIR }}/*
