@@ -24,6 +24,8 @@ jobs:
       contents: read
       # id-token: write
       # packages: write
+    env:
+      ARTIFACT_DIR: /tmp/tst_logs_${{ github.run_id }}
 
     steps:
       - name: Checkout code
@@ -31,15 +33,26 @@ jobs:
 
       - name: Build images
         run: |
-          docker compose --progress plain build --pull
+          docker compose --progress plain pull
+          docker compose --progress plain build
 
-      - name: Bring up containers and test
+      - name: Bring up containers
         run: |
           docker compose --progress plain up --detach --wait --wait-timeout 30 --no-build
-          echo "-- Running containers:"
+          echo "-- List containers:"
           docker ps --size
-          echo "-- Logs:"
+          echo "-- traefik logs:"
+          docker logs traefik
+          echo "-- unbound logs:"
           docker logs dns
+          echo "-- pihole logs:"
+          docker logs pihole
+
+      - name: Test Unbound DNS resolution
+        env:
+          DUMP_CACHE_FILE: ${{ env.ARTIFACT_DIR }}/unbound_cache_dump.txt
+        run: |
+          mkdir -p $ARTIFACT_DIR
           echo "-- DNSSEC query:"
           dig -p 5335 @localhost cloudflare.com +dnssec
           echo "-- Sleeping..."
@@ -47,17 +60,26 @@ jobs:
           echo "-- Unbound stats:"
           docker exec -i dns unbound-control stats_noreset
           echo "-- Unbound cache dump:"
-          docker exec -i dns unbound-control dump_cache > /tmp/unbound_cache_dump.txt
-          cat /tmp/unbound_cache_dump.txt | head -n 10
+          docker exec -i dns unbound-control dump_cache > $DUMP_CACHE_FILE
+          cat $DUMP_CACHE_FILE | head -n 10
           echo "-- Unbound cache dump (last 10 lines):"
-          tail -n 10 /tmp/unbound_cache_dump.txt
+          tail -n 10 $DUMP_CACHE_FILE
+
+      - name: Test pihole DNS resolution
+        run: |
+          echo "-- DNSSEC query:"
+          dig -p 5300 @localhost microsoft.com +dnssec
+          echo "-- pihole log:"
+          docker exec -i pihole tail -40  /var/log/pihole/pihole.log | tee $ARTIFACT_DIR/pihole.log
+          echo "-- pihole log:"
+          docker exec -i pihole tail -40  /var/log/pihole/FTL.log | tee $ARTIFACT_DIR/FTL.log
 
       - name: Stop containers
         run: |
           docker compose --progress plain down --rmi all
 
-      - name: upload cache dump
+      - name: upload test logs
         uses: actions/upload-artifact@v4
         with:
-          name: unbound_cache_dump
-          path: /tmp/unbound_cache_dump.txt
+          name: test_logs
+          path: ${{ env.ARTIFACT_DIR }}/*
