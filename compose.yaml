@@ -7,6 +7,7 @@ services:
       - "--api.dashboard=true"
       - "--log.level=INFO"
       - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
       # don't proxy for the DNS 53 ports, not reliably forwarded by traefik
       - "--entrypoints.web.address=:80"
       - "--ping=true"
@@ -14,6 +15,7 @@ services:
       - dns-net
     ports:
       - "80:80"
+      - "8080:8080"
     depends_on:
       - pihole
     healthcheck:
@@ -28,9 +30,6 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.api.entrypoints=web"
-      - "traefik.http.routers.api.service=api@internal"
-      - "traefik.http.routers.api.rule=Host(`traefik.localhost`)"
 
   dns:
     container_name: dns
@@ -58,8 +57,8 @@ services:
     networks:
       - dns-net
     ports:
-      - "5300:53/tcp"
-      - "5300:53/udp"
+      - "53:53/tcp"
+      - "53:53/udp"
     environment:
       # https://docs.pi-hole.net/docker/configuration/?h=tz#environment-variables
       TZ: "America/Los_Angeles"
@@ -69,6 +68,7 @@ services:
       FTLCONF_dns_listeningMode: "BIND"
       FTLCONF_dns_revServers: "true,10.0.10.0/24,10.0.10.1,jenni.home"
       FTLCONF_dns_reply_host_force4: "true"
+      FTLCONF_webserver_paths_prefix: "/pihole"
       # set webUI password later via:
       # > docker exec -it pihole pihole setpassword <password>
     volumes:
@@ -77,8 +77,10 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.pihole.entrypoints=web"
       - "traefik.http.routers.pihole.service=pihole"
-      - "traefik.http.routers.pihole.rule=Host(`pihole.localhost`)"
       - "traefik.http.services.pihole.loadbalancer.server.port=80"
+      - "traefik.http.routers.pihole.rule=PathPrefix(`/pihole`)"
+      - "traefik.http.middlewares.pi-strip-prefix.stripprefix.prefixes=/pihole"
+      - "traefik.http.routers.pihole.middlewares=pi-strip-prefix@docker"
     depends_on:
       - dns
     healthcheck:
