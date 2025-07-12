@@ -1,14 +1,17 @@
 {
   "cSpell.words": [
+    "addprefix",
     "Buildx",
     "checkconf",
     "DNSSEC",
     "edns",
+    "exposedbydefault",
     "FTLCONF",
     "healthcheck",
     "jenni",
     "logfile",
     "macvlan",
+    "mgmt",
     "minimisation",
     "noreset",
     "pihole",
@@ -16,6 +19,7 @@
     "rcvbuf",
     "servfail",
     "setpassword",
+    "stripprefix",
     "traefik",
     "Ubiquiti"
   ],
