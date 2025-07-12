@@ -52,21 +52,20 @@ services:
 
   pihole:
     container_name: pihole
-    hostname: ns1
+    hostname: $PIHOLE_HOSTNAME
     image: pihole/pihole:latest
     networks:
       - dns-net
     ports:
-      - "53:53/tcp"
-      - "53:53/udp"
+      - "$PIHOLE_DNS_PORT:53/tcp"
+      - "$PIHOLE_DNS_PORT:53/udp"
     environment:
-      # https://docs.pi-hole.net/docker/configuration/?h=tz#environment-variables
-      TZ: "America/Los_Angeles"
+      TZ: "$PIHOLE_TIMEZONE"
       FTLCONF_dns_upstreams: "dns#5335"
       FTLCONF_dns_dnssec: "true"
       FTLCONF_dns_interface: "eth0"
       FTLCONF_dns_listeningMode: "BIND"
-      FTLCONF_dns_revServers: "true,10.0.10.0/24,10.0.10.1,jenni.home"
+      FTLCONF_dns_revServers: "PIHOLE_LOCAL_DNS_REVERSE_SERVERS"
       FTLCONF_dns_reply_host_force4: "true"
       FTLCONF_webserver_paths_prefix: "/pihole"
       # set webUI password later via:
@@ -80,6 +79,7 @@ services:
       - "traefik.http.services.pihole.loadbalancer.server.port=80"
       - "traefik.http.routers.pihole.rule=PathPrefix(`/pihole`)"
       - "traefik.http.middlewares.pi-strip-prefix.stripprefix.prefixes=/pihole"
+      - "traefik.http.middlewares.pi-admin.addprefix.prefix=/admin"
       - "traefik.http.routers.pihole.middlewares=pi-strip-prefix@docker"
     depends_on:
       - dns
