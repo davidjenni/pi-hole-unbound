@@ -1,6 +1,7 @@
 FROM alpine:latest
 
 COPY unbound.conf /etc/unbound/unbound.conf
+COPY unbound.d/*.conf /etc/unbound/unbound.d/
 COPY startup.sh /etc/unbound/startup.sh
 
 RUN apk add --no-cache drill unbound \
