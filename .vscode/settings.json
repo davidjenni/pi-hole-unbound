@@ -20,6 +20,7 @@
     "servfail",
     "setpassword",
     "stripprefix",
+    "toplevel",
     "traefik",
     "Ubiquiti"
   ],
