@@ -42,11 +42,11 @@ jobs:
           echo "-- List containers:"
           docker ps --size
           echo "-- traefik logs:"
-          docker logs traefik
+          docker logs ns-traefik-1
           echo "-- unbound logs:"
-          docker logs dns
+          docker logs ns-dns-1
           echo "-- pihole logs:"
-          docker logs pihole
+          docker logs ns-pihole-1
 
       - name: Test Unbound DNS resolution
         env:
@@ -58,9 +58,9 @@ jobs:
           echo "-- Sleeping..."
           sleep 10
           echo "-- Unbound stats:"
-          docker exec -i dns unbound-control stats_noreset
+          docker exec -i ns-dns-1 unbound-control stats_noreset
           echo "-- Unbound cache dump:"
-          docker exec -i dns unbound-control dump_cache > $DUMP_CACHE_FILE
+          docker exec -i ns-dns-1 unbound-control dump_cache > $DUMP_CACHE_FILE
           cat $DUMP_CACHE_FILE | head -n 10
           echo "-- Unbound cache dump (last 10 lines):"
           tail -n 10 $DUMP_CACHE_FILE
@@ -70,9 +70,9 @@ jobs:
           echo "-- DNSSEC query:"
           dig -p 5300 @localhost microsoft.com +dnssec
           echo "-- pihole log:"
-          docker exec -i pihole tail -40  /var/log/pihole/pihole.log | tee $ARTIFACT_DIR/pihole.log
+          docker exec -i ns-pihole-1 tail -40  /var/log/pihole/pihole.log | tee $ARTIFACT_DIR/pihole.log
           echo "-- pihole log:"
-          docker exec -i pihole tail -40  /var/log/pihole/FTL.log | tee $ARTIFACT_DIR/FTL.log
+          docker exec -i ns-pihole-1 tail -40  /var/log/pihole/FTL.log | tee $ARTIFACT_DIR/FTL.log
 
       - name: Stop containers
         run: |
