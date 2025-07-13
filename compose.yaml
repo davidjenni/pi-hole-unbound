@@ -1,6 +1,7 @@
+name: ns
+
 services:
   traefik:
-    container_name: traefik
     image: traefik:v3.4
     command:
       - "--api.insecure=true"
@@ -32,7 +33,6 @@ services:
       - "traefik.enable=true"
 
   dns:
-    container_name: dns
     build:
       context: ./unbound/
       dockerfile: Dockerfile
@@ -51,7 +51,6 @@ services:
     restart: unless-stopped
 
   pihole:
-    container_name: pihole
     hostname: $PIHOLE_HOSTNAME
     image: pihole/pihole:latest
     networks:
@@ -69,9 +68,9 @@ services:
       FTLCONF_dns_reply_host_force4: "true"
       FTLCONF_webserver_paths_prefix: "/pihole"
       # set webUI password later via:
-      # > docker exec -it pihole pihole setpassword <password>
+      # > docker exec -it ns-pihole-1 pihole setpassword <password>
     volumes:
-      - ./pi-hole:/etc/pihole
+      - ~/etc-pihole:/etc/pihole
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.pihole.entrypoints=web"

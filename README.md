@@ -34,22 +34,19 @@ dig -p 5300 @localhost cloudflare.com +dnssec
 directly connect to container:
 
 ```bash
-docker exec -it dns ash
+docker exec -it ns-dns-1 ash
 ```
 
 ## Deployment
 
 ### Manual deployment
 
-- git clone this repo (or [download main branch as zip, then unzip](https://github.com/davidjenni/pi-hole-unbound/archive/refs/heads/main.zip))
+- git clone this repo (or [download latest release as zip, then unzip](https://github.com/davidjenni/pi-hole-unbound/releases))
 - Create your own *.prod.env file, use the checked in jenni.prod.env as starting point
 - re-start compose stack (build & pull before stopping the already running DNS server!):
 
 ```bash
-docker compose --env-file lan.prod.env build --pull && \
-docker compose --env-file lan.prod.env stop && \
-docker compose --env-file lan.prod.env up -d --wait && \
-docker compose ps
+./deploy.sh
 ```
 
 ## TODOs
