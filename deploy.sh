@@ -11,3 +11,8 @@ echo ">>-- Deployment complete. Current containers:" && \
 docker container ls -a && \
 echo ">>-- Current container stats:" && \
 docker compose --env-file lan.prod.env stats --no-stream
+
+pihole=ns-pihole-1
+read -s -p "Enter new pi-hole admin webUI password: " pihole_pw
+# Note: removing the -i flag to avoid the spam "What's next" from docker CLI
+docker exec -t "$pihole" pihole setpassword "$pihole_pw"
