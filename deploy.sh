@@ -31,10 +31,6 @@ docker compose --env-file "$env_file" build && \
 echo ">>-- Deploying new versions..." && \
 docker compose --env-file "$env_file" stop && \
 docker compose --env-file "$env_file" up -d --wait && \
-echo ">>-- Deployment complete. Current containers:" && \
-docker container ls -a && \
-echo ">>-- Current container stats:" && \
-docker compose --env-file "$env_file" stats --no-stream && \
 echo ">>-- Setting Pi-hole web UI password..." && {
   if [[ -n "${PIHOLE_WEBUI_PASSWORD:-}" ]]; then
     docker exec -i "$pihole_container" sh -c 'read -r pw; pihole setpassword "$pw"' <<<"$PIHOLE_WEBUI_PASSWORD"
@@ -47,7 +43,13 @@ echo ">>-- Setting Pi-hole web UI password..." && {
 } && \
 echo ">>-- Configuring allowlist..." && {
   allowlist=$(parseListFile "pihole-allowlist.txt")
-  echo "skipping allow list due to API error; list would be: $allowlist"
-  # TODO: getting error: "API not available, please check FTL log"
-  # docker exec -it "$pihole_container" pihole allow $allowlist
-}
+  # HACK: pihole script running within container cannot resolve api url with the '/pihole' path prefix
+  docker exec -t "$pihole_container" ash -c "export API_URL=http://localhost:80/api/ && pihole allow $allowlist"
+} && \
+echo ">>-- Deployment complete. Current containers:" && \
+docker container ls -a && \
+echo ">>-- Current container stats:" && \
+docker compose --env-file "$env_file" stats --no-stream
+
+# TODO: fetch sid for api session authN, e.g. to set blocklist via api:
+# docker exec -t ns-pihole-1 ash -c "export API_URL=http://localhost:80/api/ && pihole api auth | jq -r \"(.session.sid)\""

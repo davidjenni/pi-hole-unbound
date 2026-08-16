@@ -1,3 +1,4 @@
 # https://docs.pi-hole.net/guides/misc/allowlist-denylist/
+aax-us-east-retail-direct.amazon.com
 click.redditmail.com
 www.gstatic.com
