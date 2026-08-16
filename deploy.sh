@@ -10,9 +10,15 @@ docker compose --env-file lan.prod.env up -d --wait && \
 echo ">>-- Deployment complete. Current containers:" && \
 docker container ls -a && \
 echo ">>-- Current container stats:" && \
-docker compose --env-file lan.prod.env stats --no-stream
+docker compose --env-file lan.prod.env stats --no-stream && {
+  pihole_container="${PIHOLE_CONTAINER:-ns-pihole-1}"
 
-pihole=ns-pihole-1
-read -s -p "Enter new pi-hole admin webUI password: " pihole_pw
-# Note: removing the -i flag to avoid the spam "What's next" from docker CLI
-docker exec -t "$pihole" pihole setpassword "$pihole_pw"
+  if [[ -n "${PIHOLE_WEBUI_PASSWORD:-}" ]]; then
+    docker exec -i "$pihole_container" sh -c 'read -r pw; pihole setpassword "$pw"' <<<"$PIHOLE_WEBUI_PASSWORD"
+  elif [[ -t 0 ]]; then
+    docker exec -it "$pihole_container" pihole -a -p
+  else
+    echo "PIHOLE_WEBUI_PASSWORD must be set when running non-interactively." >&2
+    exit 1
+  fi
+}
