@@ -2,7 +2,8 @@ name: ns
 
 services:
   traefik:
-    image: traefik:v3.4
+    # https://github.com/traefik/traefik/releases
+    image: traefik:v3.7
     command:
       - "--api.insecure=true"
       - "--api.dashboard=true"
@@ -52,7 +53,9 @@ services:
 
   pihole:
     hostname: $PIHOLE_HOSTNAME
-    image: pihole/pihole:latest
+    # https://github.com/pi-hole/docker-pi-hole#docker-tags-and-versioning
+    # https://github.com/pi-hole/docker-pi-hole/releases
+    image: pihole/pihole:2026.07.2
     networks:
       - dns-net
     ports:
