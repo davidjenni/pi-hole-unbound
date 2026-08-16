@@ -1,0 +1,3 @@
+# https://docs.pi-hole.net/guides/misc/allowlist-denylist/
+click.redditmail.com
+www.gstatic.com
