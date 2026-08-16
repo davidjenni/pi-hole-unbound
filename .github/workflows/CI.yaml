@@ -38,7 +38,7 @@ jobs:
 
       - name: Bring up containers
         run: |
-          ./deploy.sh
+          ./deploy.sh ./.env
           echo "-- List containers:"
           docker ps --size
           echo "-- traefik logs:"
@@ -78,7 +78,7 @@ jobs:
 
       - name: Stop containers
         run: |
-          docker compose --env-file lan.prod.env --progress plain down --rmi all
+          docker compose --env-file ./.env --progress plain down --rmi all
 
       - name: upload test logs
         uses: actions/upload-artifact@v4
