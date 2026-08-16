@@ -38,7 +38,7 @@ jobs:
 
       - name: Bring up containers
         run: |
-          docker compose --progress plain up --detach --wait --wait-timeout 30 --no-build
+          ./deploy.sh ./.env
           echo "-- List containers:"
           docker ps --size
           echo "-- traefik logs:"
@@ -47,6 +47,8 @@ jobs:
           docker logs ns-dns-1
           echo "-- pihole logs:"
           docker logs ns-pihole-1
+        env:
+          PIHOLE_WEBUI_PASSWORD: notsecure
 
       - name: Test Unbound DNS resolution
         env:
@@ -76,7 +78,7 @@ jobs:
 
       - name: Stop containers
         run: |
-          docker compose --progress plain down --rmi all
+          docker compose --env-file ./.env --progress plain down --rmi all
 
       - name: upload test logs
         uses: actions/upload-artifact@v4
