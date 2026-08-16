@@ -14,6 +14,7 @@
     "mgmt",
     "minimisation",
     "noreset",
+    "notsecure",
     "pihole",
     "qname",
     "rcvbuf",
@@ -22,7 +23,8 @@
     "stripprefix",
     "toplevel",
     "traefik",
-    "Ubiquiti"
+    "Ubiquiti",
+    "WEBUI"
   ],
   "editor.formatOnSave": true
 }
