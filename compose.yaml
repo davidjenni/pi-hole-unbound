@@ -22,7 +22,7 @@ services:
       - pihole
     healthcheck:
       test: ["CMD-SHELL", "traefik healthcheck --ping || exit 1"]
-      interval: 60s
+      interval: 600s
       timeout: 5s
       start_period: 30s
       start_interval: 10s
@@ -44,7 +44,7 @@ services:
       - "5335:5335/udp"
     healthcheck:
       test: ["CMD-SHELL", "drill -D -p 5335 cloudflare.com @127.0.0.1 || exit 1"]
-      interval: 60s
+      interval: 600s
       timeout: 10s
       start_period: 30s
       start_interval: 10s
@@ -87,7 +87,7 @@ services:
       - dns
     healthcheck:
       test: ["CMD-SHELL", "dig @localhost github.com +short || exit 1"]
-      interval: 60s
+      interval: 600s
       timeout: 10s
       start_period: 120s
       start_interval: 15s
